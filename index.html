@@ -777,7 +777,16 @@ Genera el protocolo personalizado ahora.`;
     );
 
     const data = await response.json();
-    const text = data.candidates?.[0]?.content?.parts?.[0]?.text || 'Error al generar el protocolo.';
+    const text = data.candidates?.[0]?.content?.parts?.[0]?.text;
+    
+    if (!text) {
+      const errMsg = data.error?.message || JSON.stringify(data);
+      loadingDiv.style.display = 'none';
+      textDiv.textContent = '⚠ Error: ' + errMsg;
+      btn.disabled = false;
+      setStatus('ERROR');
+      return;
+    }
 
     loadingDiv.style.display = 'none';
     currentProtocol = text;
