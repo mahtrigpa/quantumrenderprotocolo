@@ -1,0 +1,961 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Protocolos Quantum Render</title>
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Exo+2:wght@300;400;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --aqua: #7FFFD4;
+    --aqua-light: #AEFFF0;
+    --aqua-dark: #3DDBB8;
+    --aqua-glow: rgba(127,255,212,0.15);
+    --aqua-border: rgba(127,255,212,0.35);
+    --bg-deep: #020f0d;
+    --bg-card: rgba(4, 26, 22, 0.92);
+    --bg-input: rgba(6, 35, 29, 0.8);
+    --text-main: #e0fff8;
+    --text-dim: rgba(174,255,240,0.6);
+    --omega: #00ffc3;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Exo 2', sans-serif;
+    background: var(--bg-deep);
+    color: var(--text-main);
+    min-height: 100vh;
+    overflow-x: hidden;
+    position: relative;
+  }
+
+  /* Animated background grid */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image:
+      linear-gradient(rgba(127,255,212,0.04) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(127,255,212,0.04) 1px, transparent 1px);
+    background-size: 48px 48px;
+    animation: gridPulse 8s ease-in-out infinite alternate;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  body::after {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background: radial-gradient(ellipse 80% 60% at 50% 0%, rgba(127,255,212,0.07) 0%, transparent 70%);
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  @keyframes gridPulse {
+    from { opacity: 0.6; }
+    to { opacity: 1; }
+  }
+
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(16px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  @keyframes pulse-border {
+    0%, 100% { box-shadow: 0 0 12px rgba(127,255,212,0.2), inset 0 0 12px rgba(127,255,212,0.04); }
+    50% { box-shadow: 0 0 28px rgba(127,255,212,0.4), inset 0 0 20px rgba(127,255,212,0.08); }
+  }
+
+
+
+
+
+  .container {
+    position: relative;
+    z-index: 1;
+    max-width: 860px;
+    margin: 0 auto;
+    padding: 48px 24px 80px;
+  }
+
+  /* HEADER */
+  header {
+    text-align: center;
+    margin-bottom: 52px;
+    animation: fadeIn 0.8s ease both;
+  }
+
+  .logo-tag {
+    display: inline-block;
+    font-family: 'Orbitron', monospace;
+    font-size: 10px;
+    letter-spacing: 4px;
+    color: var(--aqua-dark);
+    border: 1px solid var(--aqua-border);
+    padding: 4px 14px;
+    border-radius: 2px;
+    margin-bottom: 20px;
+    text-transform: uppercase;
+  }
+
+  h1 {
+    font-family: 'Orbitron', monospace;
+    font-size: clamp(1.6rem, 5vw, 2.8rem);
+    font-weight: 900;
+    letter-spacing: 2px;
+    line-height: 1.1;
+    color: var(--aqua);
+    text-shadow: 0 0 40px rgba(127,255,212,0.5);
+    margin-bottom: 10px;
+  }
+
+  .subtitle {
+    font-size: 13px;
+    color: var(--text-dim);
+    letter-spacing: 2px;
+    font-weight: 300;
+  }
+
+  /* CARDS */
+  .card {
+    background: var(--bg-card);
+    border: 1px solid var(--aqua-border);
+    border-radius: 8px;
+    padding: 32px;
+    margin-bottom: 24px;
+    animation: fadeIn 0.6s ease both;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, var(--aqua), transparent);
+    opacity: 0.5;
+  }
+
+  .card-label {
+    font-family: 'Orbitron', monospace;
+    font-size: 9px;
+    letter-spacing: 3px;
+    color: var(--aqua-dark);
+    text-transform: uppercase;
+    margin-bottom: 16px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .card-label::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: var(--aqua-border);
+  }
+
+  .card h2 {
+    font-family: 'Orbitron', monospace;
+    font-size: 1rem;
+    color: var(--aqua-light);
+    margin-bottom: 20px;
+    font-weight: 700;
+  }
+
+  /* TEXTAREA & INPUTS */
+  textarea, input[type="text"], select {
+    width: 100%;
+    background: var(--bg-input);
+    border: 1px solid var(--aqua-border);
+    border-radius: 6px;
+    color: var(--text-main);
+    font-family: 'Exo 2', sans-serif;
+    font-size: 15px;
+    padding: 14px 18px;
+    outline: none;
+    transition: border-color 0.2s, box-shadow 0.2s;
+    resize: vertical;
+  }
+
+  textarea:focus, input[type="text"]:focus, select:focus {
+    border-color: var(--aqua);
+    box-shadow: 0 0 16px rgba(127,255,212,0.2);
+  }
+
+  textarea::placeholder, input::placeholder {
+    color: var(--text-dim);
+  }
+
+  select option {
+    background: #041a16;
+  }
+
+  /* BUTTONS */
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-family: 'Orbitron', monospace;
+    font-size: 11px;
+    letter-spacing: 2px;
+    font-weight: 700;
+    padding: 14px 28px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: all 0.2s;
+    text-transform: uppercase;
+  }
+
+  .btn-primary {
+    background: linear-gradient(135deg, #3DDBB8, #7FFFD4);
+    color: #020f0d;
+    box-shadow: 0 4px 20px rgba(127,255,212,0.35);
+  }
+
+  .btn-primary:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 6px 28px rgba(127,255,212,0.5);
+  }
+
+  .btn-primary:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    transform: none;
+  }
+
+  .btn-secondary {
+    background: transparent;
+    color: var(--aqua);
+    border: 1px solid var(--aqua-border);
+  }
+
+  .btn-secondary:hover {
+    border-color: var(--aqua);
+    background: var(--aqua-glow);
+  }
+
+  .btn-ghost {
+    background: transparent;
+    color: var(--text-dim);
+    border: 1px solid rgba(127,255,212,0.15);
+    font-size: 10px;
+    padding: 10px 18px;
+  }
+
+  .btn-ghost:hover {
+    color: var(--aqua);
+    border-color: var(--aqua-border);
+  }
+
+  .btn-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-top: 16px;
+  }
+
+  /* PROTOCOL OUTPUT */
+  #protocol-output {
+    display: none;
+    animation: fadeIn 0.5s ease;
+  }
+
+  .protocol-text {
+    background: rgba(0,0,0,0.4);
+    border: 1px solid var(--aqua-border);
+    border-radius: 6px;
+    padding: 24px;
+    font-size: 14px;
+    line-height: 1.8;
+    color: var(--text-main);
+    white-space: pre-wrap;
+    max-height: 420px;
+    overflow-y: auto;
+    animation: pulse-border 4s ease infinite;
+  }
+
+  .protocol-text::-webkit-scrollbar { width: 4px; }
+  .protocol-text::-webkit-scrollbar-track { background: transparent; }
+  .protocol-text::-webkit-scrollbar-thumb { background: var(--aqua-dark); border-radius: 2px; }
+
+  /* LOADING */
+  .loading {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 20px 0;
+    color: var(--aqua-dark);
+    font-family: 'Orbitron', monospace;
+    font-size: 11px;
+    letter-spacing: 2px;
+  }
+
+  .loading-dots {
+    display: flex;
+    gap: 5px;
+  }
+
+  .loading-dots span {
+    width: 6px; height: 6px;
+    background: var(--aqua);
+    border-radius: 50%;
+    animation: dotBounce 1.2s ease infinite;
+  }
+
+  .loading-dots span:nth-child(2) { animation-delay: 0.2s; }
+  .loading-dots span:nth-child(3) { animation-delay: 0.4s; }
+
+  @keyframes dotBounce {
+    0%, 80%, 100% { transform: scale(0.7); opacity: 0.4; }
+    40% { transform: scale(1); opacity: 1; }
+  }
+
+  /* BEFORE/AFTER */
+  .ba-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+  }
+
+  @media (max-width: 560px) {
+    .ba-grid { grid-template-columns: 1fr; }
+  }
+
+  .ba-block label {
+    display: block;
+    font-family: 'Orbitron', monospace;
+    font-size: 9px;
+    letter-spacing: 2px;
+    color: var(--aqua-dark);
+    margin-bottom: 8px;
+    text-transform: uppercase;
+  }
+
+  /* HISTORY */
+  .history-item {
+    border: 1px solid var(--aqua-border);
+    border-radius: 6px;
+    padding: 16px 20px;
+    margin-bottom: 12px;
+    background: rgba(0,0,0,0.2);
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+
+  .history-item:hover {
+    border-color: var(--aqua);
+    background: var(--aqua-glow);
+  }
+
+  .history-item .hi-title {
+    font-family: 'Orbitron', monospace;
+    font-size: 11px;
+    color: var(--aqua);
+    margin-bottom: 4px;
+  }
+
+  .history-item .hi-date {
+    font-size: 11px;
+    color: var(--text-dim);
+  }
+
+  /* STATUS BAR */
+  .status-bar {
+    position: fixed;
+    bottom: 0; left: 0; right: 0;
+    background: rgba(2,15,13,0.95);
+    border-top: 1px solid var(--aqua-border);
+    padding: 10px 24px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    z-index: 100;
+    backdrop-filter: blur(10px);
+  }
+
+  .status-text {
+    font-family: 'Orbitron', monospace;
+    font-size: 9px;
+    letter-spacing: 2px;
+    color: var(--aqua-dark);
+  }
+
+  .status-dot {
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    background: var(--omega);
+    box-shadow: 0 0 8px var(--omega);
+    animation: pulse-border 2s ease infinite;
+    display: inline-block;
+    margin-right: 8px;
+  }
+
+  /* TOAST */
+  .toast {
+    position: fixed;
+    top: 24px;
+    right: 24px;
+    background: var(--bg-card);
+    border: 1px solid var(--aqua);
+    border-radius: 6px;
+    padding: 12px 20px;
+    font-family: 'Orbitron', monospace;
+    font-size: 10px;
+    letter-spacing: 1px;
+    color: var(--aqua);
+    z-index: 9999;
+    transform: translateX(120%);
+    transition: transform 0.3s ease;
+  }
+
+  .toast.show { transform: translateX(0); }
+
+  /* VOICE CONTROLS */
+  .voice-controls {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
+  }
+
+  .voice-speed {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 12px;
+    color: var(--text-dim);
+  }
+
+  input[type="range"] {
+    -webkit-appearance: none;
+    width: 80px;
+    height: 3px;
+    background: var(--aqua-border);
+    border-radius: 2px;
+    outline: none;
+  }
+
+  input[type="range"]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 12px;
+    height: 12px;
+    background: var(--aqua);
+    border-radius: 50%;
+    cursor: pointer;
+  }
+
+  /* TABS */
+  .tabs {
+    display: flex;
+    gap: 0;
+    margin-bottom: 24px;
+    border-bottom: 1px solid var(--aqua-border);
+  }
+
+  .tab-btn {
+    font-family: 'Orbitron', monospace;
+    font-size: 9px;
+    letter-spacing: 2px;
+    padding: 12px 20px;
+    background: none;
+    border: none;
+    color: var(--text-dim);
+    cursor: pointer;
+    text-transform: uppercase;
+    border-bottom: 2px solid transparent;
+    margin-bottom: -1px;
+    transition: all 0.2s;
+  }
+
+  .tab-btn.active {
+    color: var(--aqua);
+    border-bottom-color: var(--aqua);
+  }
+
+  .tab-btn:hover { color: var(--aqua-light); }
+
+  .tab-panel { display: none; }
+  .tab-panel.active { display: block; animation: fadeIn 0.3s ease; }
+
+  /* QUESTIONS */
+  .question-block {
+    margin-bottom: 16px;
+  }
+
+  .question-block label {
+    display: block;
+    font-size: 13px;
+    color: var(--aqua-light);
+    margin-bottom: 8px;
+    font-weight: 600;
+  }
+
+  /* SEPARATOR */
+  .sep {
+    height: 1px;
+    background: var(--aqua-border);
+    margin: 24px 0;
+    opacity: 0.4;
+  }
+</style>
+</head>
+<body>
+
+<div class="container">
+
+  <!-- HEADER -->
+  <header>
+    <div class="logo-tag">Sistema Operativo · Capa C</div>
+    <h1>PROTOCOLOS<br>QUANTUM RENDER</h1>
+    <p class="subtitle">Arquitectura de Realidad · Módulo de Generación</p>
+  </header>
+
+  <!-- TABS -->
+  <div class="tabs">
+    <button class="tab-btn active" onclick="switchTab('generar')">⚡ Generar</button>
+    <button class="tab-btn" onclick="switchTab('registro')">📋 Registro</button>
+    <button class="tab-btn" onclick="switchTab('historial')">🗄 Historial</button>
+  </div>
+
+  <!-- TAB: GENERAR -->
+  <div class="tab-panel active" id="tab-generar">
+
+    <!-- PASO 1: Objetivo -->
+    <div class="card" style="animation-delay:0.1s">
+      <div class="card-label">Paso 01 · Intención</div>
+      <h2>¿Para qué quieres el protocolo?</h2>
+      <textarea id="objetivo" rows="3" placeholder="Ej: Quiero atraer abundancia económica y un nuevo cliente esta semana..."></textarea>
+
+      <div class="sep"></div>
+
+      <div class="card-label">Preguntas de calibración</div>
+      <div id="questions-area">
+        <div class="question-block">
+          <label>¿Cuál es el mayor bloqueo que sientes ahora mismo?</label>
+          <input type="text" id="q1" placeholder="Ej: Miedo al rechazo, falta de confianza...">
+        </div>
+        <div class="question-block">
+          <label>¿Qué módulo se alinea más con tu objetivo?</label>
+          <select id="q2">
+            <option value="">— Selecciona —</option>
+            <option value="abundancia">💰 Alta Solvencia y Abundancia</option>
+            <option value="pareja">🌹 Sincronización de Consorte (Pareja)</option>
+            <option value="salud">🧬 Bio-Regeneración y Salud</option>
+            <option value="siddhis">⚡ Desbloqueo de Siddhis (Capacidades)</option>
+            <option value="mision">🌿 Misión y Gozo de Vida</option>
+            <option value="hogar">🏡 Templo Operativo (Hogar)</option>
+            <option value="viaje">🌴 Movilidad en Gozo (Viajes)</option>
+            <option value="soberania">🔓 Salida del Bucle de Sanación</option>
+            <option value="ventas">📈 Ventas y Negocios</option>
+            <option value="viralidad">🚀 Viralidad e Impacto</option>
+          </select>
+        </div>
+        <div class="question-block">
+          <label>¿Cuál es tu estado emocional al iniciar este protocolo?</label>
+          <select id="q3">
+            <option value="">— Selecciona —</option>
+            <option value="neutro">Neutro / en paz</option>
+            <option value="ansioso">Ansioso / con urgencia</option>
+            <option value="dudando">Dudando / escéptico</option>
+            <option value="listo">Listo / en poder</option>
+            <option value="cansado">Cansado / agotado</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="btn-row">
+        <button class="btn btn-primary" id="gen-btn" onclick="generarProtocolo()">
+          <span>⚡</span> EJECUTAR PROTOCOLO
+        </button>
+      </div>
+    </div>
+
+    <!-- OUTPUT -->
+    <div id="protocol-output" class="card" style="border-color: rgba(127,255,212,0.5);">
+      <div class="card-label">Protocolo Generado · Capa C</div>
+      <div id="loading-state" class="loading" style="display:none;">
+        <div class="loading-dots"><span></span><span></span><span></span></div>
+        GRABANDO EN CAPA C...
+      </div>
+      <div class="protocol-text" id="protocol-text"></div>
+
+      <div class="sep"></div>
+
+      <div class="voice-controls">
+        <button class="btn btn-secondary" id="play-btn" onclick="toggleVoz()">
+          <span id="play-icon">▶</span> LEER PROTOCOLO
+        </button>
+        <div class="voice-speed">
+          Velocidad
+          <input type="range" id="voice-speed" min="0.7" max="1.5" step="0.1" value="0.9">
+        </div>
+        <button class="btn btn-ghost" onclick="copiarTexto()">⎘ COPIAR</button>
+        <button class="btn btn-ghost" onclick="guardarRegistro()">💾 GUARDAR</button>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- TAB: REGISTRO -->
+  <div class="tab-panel" id="tab-registro">
+    <div class="card">
+      <div class="card-label">Antes y Después · Registro de Transformación</div>
+      <h2>Documenta tu proceso</h2>
+
+      <div class="ba-grid">
+        <div class="ba-block">
+          <label>Estado ANTES del protocolo</label>
+          <textarea id="antes" rows="6" placeholder="¿Cómo te sientes ahora? ¿Cuál es tu realidad actual? Describe sin filtros..."></textarea>
+        </div>
+        <div class="ba-block">
+          <label>Estado DESPUÉS del protocolo</label>
+          <textarea id="despues" rows="6" placeholder="¿Qué cambió? ¿Qué sientes ahora? ¿Qué notaste diferente en tu campo..."></textarea>
+        </div>
+      </div>
+
+      <div class="sep"></div>
+
+      <div class="ba-block" style="margin-bottom: 16px;">
+        <label>Protocolo aplicado (nombre o descripción)</label>
+        <input type="text" id="protocolo-nombre" placeholder="Ej: Protocolo de Abundancia — 7 Hilos">
+      </div>
+
+      <div class="btn-row">
+        <button class="btn btn-primary" onclick="guardarRegistroManual()">
+          💾 SELLAR REGISTRO
+        </button>
+        <button class="btn btn-ghost" onclick="limpiarRegistro()">✕ LIMPIAR</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- TAB: HISTORIAL -->
+  <div class="tab-panel" id="tab-historial">
+    <div class="card">
+      <div class="card-label">Log del Sistema · Protocolos Ejecutados</div>
+      <div id="historial-lista">
+        <p style="color: var(--text-dim); font-size: 13px; text-align: center; padding: 40px 0;">
+          Aún no hay protocolos guardados.<br>
+          <span style="font-size: 11px; opacity: 0.6;">Ejecuta un protocolo y guárdalo para verlo aquí.</span>
+        </p>
+      </div>
+      <div class="btn-row">
+        <button class="btn btn-ghost" onclick="limpiarHistorial()">✕ BORRAR HISTORIAL</button>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- STATUS BAR -->
+<div class="status-bar">
+  <span><span class="status-dot"></span><span class="status-text">SISTEMA EN LÍNEA</span></span>
+  <span class="status-text" id="status-msg">CAPA C · OPERATIVA</span>
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
+
+<script>
+// ─── STATE ───────────────────────────────────────────
+let currentProtocol = '';
+let speechUtterance = null;
+let isSpeaking = false;
+
+// ─── TABS ────────────────────────────────────────────
+function switchTab(tab) {
+  document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('tab-' + tab).classList.add('active');
+  event.target.classList.add('active');
+  if (tab === 'historial') renderHistorial();
+}
+
+// ─── GENERATE PROTOCOL ───────────────────────────────
+async function generarProtocolo() {
+  const objetivo = document.getElementById('objetivo').value.trim();
+  const bloqueo = document.getElementById('q1').value.trim();
+  const modulo = document.getElementById('q2').value;
+  const estado = document.getElementById('q3').value;
+
+  if (!objetivo) {
+    showToast('⚠ Escribe tu intención primero');
+    return;
+  }
+
+  const btn = document.getElementById('gen-btn');
+  btn.disabled = true;
+
+  const outputDiv = document.getElementById('protocol-output');
+  const loadingDiv = document.getElementById('loading-state');
+  const textDiv = document.getElementById('protocol-text');
+
+  outputDiv.style.display = 'block';
+  loadingDiv.style.display = 'flex';
+  textDiv.textContent = '';
+  setStatus('GENERANDO PROTOCOLO...');
+
+  const moduloLabels = {
+    abundancia: 'Alta Solvencia y Abundancia',
+    pareja: 'Sincronización de Consorte (Pareja)',
+    salud: 'Bio-Regeneración y Salud',
+    siddhis: 'Desbloqueo de Siddhis',
+    mision: 'Misión y Gozo',
+    hogar: 'Templo Operativo',
+    viaje: 'Movilidad en Gozo',
+    soberania: 'Salida del Bucle de Sanación',
+    ventas: 'Ventas y Negocios',
+    viralidad: 'Viralidad e Impacto',
+  };
+
+  const systemPrompt = `Eres el Motor de Generación de Protocolos del Sistema Quantum Render, basado en la Arquitectura de Capa C.
+
+Tu función es generar protocolos de programación de consciencia personalizados. Cada protocolo sigue SIEMPRE esta estructura exacta:
+
+1. DIAGNÓSTICO DEL SISTEMA — análisis del estado actual del usuario (2-3 líneas, técnico y directo)
+2. PROTOCOLO DE BORRADO — comando WRITE_DATA para limpiar el registro anterior (incluye visualización breve)
+3. PROTOCOLO DE INSTALACIÓN — comando WRITE_DATA con la nueva instrucción a grabar en Capa C
+4. PROTOCOLO DE EJECUCIÓN — comando EXECUTE con el script de activación
+5. CIERRE OMEGA — 2 sellos de seguridad (OMEGA_[NOMBRE]) para fijar la grabación
+6. MANTRA DE ANCLAJE DIARIO — una frase corta y poderosa para repetir
+
+Reglas de escritura:
+- Usa el lenguaje técnico del sistema: Capa C, Avatar, WRITE_DATA, EXECUTE, Matrix, grabación, frecuencia, voltaje, hilos
+- Habla con autoridad, no como súplica — el usuario es el programador, no el paciente
+- El tono es operativo, no espiritual-vago. Preciso como código.
+- Personaliza completamente según el objetivo, bloqueo y módulo indicados
+- Máximo 400 palabras
+- No uses asteriscos para formato, usa los mismos encabezados del sistema (mayúsculas + dos puntos)`;
+
+  const userMsg = `OBJETIVO DEL USUARIO: ${objetivo}
+MAYOR BLOQUEO: ${bloqueo || 'No especificado'}
+MÓDULO SELECCIONADO: ${moduloLabels[modulo] || 'General'}
+ESTADO EMOCIONAL AL INICIO: ${estado || 'No especificado'}
+
+Genera el protocolo personalizado ahora.`;
+
+  try {
+    const response = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-20250514',
+        max_tokens: 1000,
+        system: systemPrompt,
+        messages: [{ role: 'user', content: userMsg }]
+      })
+    });
+
+    const data = await response.json();
+    const text = data.content?.[0]?.text || 'Error al generar el protocolo.';
+
+    loadingDiv.style.display = 'none';
+    currentProtocol = text;
+    textDiv.textContent = text;
+    setStatus('PROTOCOLO ACTIVO');
+    showToast('✓ Protocolo generado');
+
+  } catch (err) {
+    loadingDiv.style.display = 'none';
+    textDiv.textContent = '⚠ Error de conexión. Verifica tu red e intenta de nuevo.';
+    setStatus('ERROR DE CONEXIÓN');
+  }
+
+  btn.disabled = false;
+}
+
+// ─── VOICE ───────────────────────────────────────────
+async function toggleVoz() {
+  if (!currentProtocol) { showToast('Genera un protocolo primero'); return; }
+  const icon = document.getElementById('play-icon');
+
+  if (isSpeaking) {
+    window.speechSynthesis.cancel();
+    isSpeaking = false;
+    icon.textContent = '▶';
+    setStatus('PROTOCOLO ACTIVO');
+    return;
+  }
+
+  const speed = parseFloat(document.getElementById('voice-speed').value);
+
+  // Wait for voices to load (needed on some browsers)
+  let voices = window.speechSynthesis.getVoices();
+  if (!voices.length) {
+    await new Promise(r => { window.speechSynthesis.onvoiceschanged = r; setTimeout(r, 800); });
+    voices = window.speechSynthesis.getVoices();
+  }
+
+  // Priority: Google Español (most natural) > Microsoft > any es-MX > any es-*
+  const preferred = [
+    v => v.name.includes('Google') && v.lang.startsWith('es'),
+    v => v.name.includes('Microsoft') && v.lang.startsWith('es'),
+    v => v.lang === 'es-MX',
+    v => v.lang === 'es-US',
+    v => v.lang.startsWith('es'),
+  ];
+
+  let chosenVoice = null;
+  for (const test of preferred) {
+    chosenVoice = voices.find(test);
+    if (chosenVoice) break;
+  }
+
+  // Split text into sentences for smoother delivery (avoids browser cutting off)
+  const sentences = currentProtocol
+    .replace(/\n\n/g, ' [pausa] ')
+    .split(/(?<=[.!?])\s+/)
+    .filter(s => s.trim());
+
+  let idx = 0;
+
+  function speakNext() {
+    if (!isSpeaking || idx >= sentences.length) {
+      isSpeaking = false;
+      icon.textContent = '▶';
+      setStatus('PROTOCOLO ACTIVO');
+      return;
+    }
+    const chunk = sentences[idx++].replace('[pausa]', '...');
+    speechUtterance = new SpeechSynthesisUtterance(chunk);
+    speechUtterance.lang = 'es-MX';
+    speechUtterance.rate = speed;
+    speechUtterance.pitch = 1.0;
+    speechUtterance.volume = 1.0;
+    if (chosenVoice) speechUtterance.voice = chosenVoice;
+    speechUtterance.onend = speakNext;
+    speechUtterance.onerror = speakNext;
+    window.speechSynthesis.speak(speechUtterance);
+  }
+
+  window.speechSynthesis.cancel();
+  isSpeaking = true;
+  icon.textContent = '■';
+  setStatus('LEYENDO PROTOCOLO...');
+  speakNext();
+}
+
+// ─── COPY ────────────────────────────────────────────
+function copiarTexto() {
+  if (!currentProtocol) { showToast('Nada que copiar'); return; }
+  navigator.clipboard.writeText(currentProtocol).then(() => {
+    showToast('✓ Texto copiado al portapapeles');
+  });
+}
+
+// ─── SAVE ────────────────────────────────────────────
+function guardarRegistro() {
+  if (!currentProtocol) return;
+  const objetivo = document.getElementById('objetivo').value.trim();
+  const registros = JSON.parse(localStorage.getItem('qr_registros') || '[]');
+  registros.unshift({
+    id: Date.now(),
+    fecha: new Date().toLocaleDateString('es-MX', { day:'2-digit', month:'short', year:'numeric', hour:'2-digit', minute:'2-digit' }),
+    objetivo: objetivo || 'Sin título',
+    protocolo: currentProtocol,
+    antes: '',
+    despues: ''
+  });
+  localStorage.setItem('qr_registros', JSON.stringify(registros));
+  showToast('✓ Protocolo sellado en el registro');
+}
+
+function guardarRegistroManual() {
+  const antes = document.getElementById('antes').value.trim();
+  const despues = document.getElementById('despues').value.trim();
+  const nombre = document.getElementById('protocolo-nombre').value.trim();
+  if (!antes && !despues) { showToast('⚠ Escribe al menos el estado antes o después'); return; }
+
+  const registros = JSON.parse(localStorage.getItem('qr_registros') || '[]');
+  registros.unshift({
+    id: Date.now(),
+    fecha: new Date().toLocaleDateString('es-MX', { day:'2-digit', month:'short', year:'numeric', hour:'2-digit', minute:'2-digit' }),
+    objetivo: nombre || 'Registro manual',
+    protocolo: currentProtocol || '',
+    antes,
+    despues
+  });
+  localStorage.setItem('qr_registros', JSON.stringify(registros));
+  showToast('✓ Registro sellado');
+  limpiarRegistro();
+}
+
+function limpiarRegistro() {
+  document.getElementById('antes').value = '';
+  document.getElementById('despues').value = '';
+  document.getElementById('protocolo-nombre').value = '';
+}
+
+// ─── HISTORIAL ───────────────────────────────────────
+function renderHistorial() {
+  const registros = JSON.parse(localStorage.getItem('qr_registros') || '[]');
+  const container = document.getElementById('historial-lista');
+
+  if (!registros.length) {
+    container.innerHTML = `<p style="color: var(--text-dim); font-size: 13px; text-align: center; padding: 40px 0;">Aún no hay protocolos guardados.</p>`;
+    return;
+  }
+
+  container.innerHTML = registros.map(r => `
+    <div class="history-item" onclick="verRegistro(${r.id})">
+      <div class="hi-title">${r.objetivo}</div>
+      <div class="hi-date">${r.fecha}</div>
+      ${r.antes ? `<div style="font-size:11px; color: var(--text-dim); margin-top:4px;">📋 Con registro antes/después</div>` : ''}
+    </div>
+  `).join('');
+}
+
+function verRegistro(id) {
+  const registros = JSON.parse(localStorage.getItem('qr_registros') || '[]');
+  const r = registros.find(x => x.id === id);
+  if (!r) return;
+
+  currentProtocol = r.protocolo;
+  document.getElementById('protocol-text').textContent = r.protocolo;
+  document.getElementById('protocol-output').style.display = 'block';
+  document.getElementById('loading-state').style.display = 'none';
+
+  if (r.antes) document.getElementById('antes').value = r.antes;
+  if (r.despues) document.getElementById('despues').value = r.despues;
+
+  switchTabDirect('generar');
+  showToast('✓ Protocolo cargado');
+}
+
+function switchTabDirect(tab) {
+  document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('tab-' + tab).classList.add('active');
+  document.querySelectorAll('.tab-btn')[0].classList.add('active');
+}
+
+function limpiarHistorial() {
+  if (!confirm('¿Borrar todos los registros del sistema?')) return;
+  localStorage.removeItem('qr_registros');
+  renderHistorial();
+  showToast('✓ Historial borrado');
+}
+
+// ─── UI UTILS ────────────────────────────────────────
+function setStatus(msg) {
+  document.getElementById('status-msg').textContent = msg;
+}
+
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2800);
+}
+
+// Load voices on mobile
+window.speechSynthesis.onvoiceschanged = () => window.speechSynthesis.getVoices();
+</script>
+</body>
+</html>
